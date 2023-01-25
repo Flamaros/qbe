@@ -3,3 +3,12 @@ qbe
 config.h
 .comfile
 *.out
+
+# Visual Studio (global)
+*.user
+
+# Visual Studio
+VS/.vs
+VS/Debug
+VS/Release
+VS/x64
