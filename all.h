@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "platform.h"
+
 #define MAKESURE(what, x) typedef char make_sure_##what[(x)?1:-1]
 #define die(...) die_(__FILE__, __VA_ARGS__)
 
@@ -418,7 +420,7 @@ typedef enum {
 extern Typ *typ;
 extern Ins insb[NIns], *curi;
 uint32_t hash(char *);
-void die_(char *, char *, ...) __attribute__((noreturn));
+NO_RETURN void die_(char *, char *, ...);
 void *emalloc(size_t);
 void *alloc(size_t);
 void freeall(void);
@@ -472,7 +474,7 @@ extern Op optab[NOp];
 void parse(FILE *, char *, void (Dat *), void (Fn *));
 void printfn(Fn *, FILE *);
 void printref(Ref, Fn *, FILE *);
-void err(char *, ...) __attribute__((noreturn));
+NO_RETURN void err(char *, ...);
 
 /* cfg.c */
 Blk *blknew(void);

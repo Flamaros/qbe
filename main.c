@@ -1,5 +1,9 @@
 #include "all.h"
-#include "config.h"
+#if defined(_WIN32)
+#	include "win32_config.h"
+#else
+#	include "config.h"
+#endif
 #include <ctype.h>
 #include <getopt.h>
 
@@ -18,6 +22,14 @@ char debug['Z'+1] = {
 	['R'] = 0, /* reg. allocation */
 };
 
+#if defined(_WIN32)
+extern Target T_amd64_sysv;
+
+static Target* tlist[] = {
+	&T_amd64_sysv,
+	0
+};
+#else
 extern Target T_amd64_sysv;
 extern Target T_arm64;
 extern Target T_rv64;
@@ -28,6 +40,8 @@ static Target *tlist[] = {
 	&T_rv64,
 	0
 };
+#endif
+
 static FILE *outf;
 static int dbg;
 

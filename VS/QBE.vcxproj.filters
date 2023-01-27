@@ -8,6 +8,9 @@
     <Filter Include="Source Files\amd64">
       <UniqueIdentifier>{79b12d18-5689-4e3e-91cb-0cade91e1271}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\win32">
+      <UniqueIdentifier>{1bd0d9a3-5a00-423a-9664-d446a3bd62fb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\spill.c">
@@ -64,6 +67,9 @@
     <ClCompile Include="..\amd64\targ.c">
       <Filter>Source Files\amd64</Filter>
     </ClCompile>
+    <ClCompile Include="..\win32\getopt.c">
+      <Filter>Source Files\win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\all.h">
@@ -74,6 +80,15 @@
     </ClInclude>
     <ClInclude Include="..\amd64\all.h">
       <Filter>Source Files\amd64</Filter>
+    </ClInclude>
+    <ClInclude Include="..\platform.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\win32_config.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\win32\getopt.h">
+      <Filter>Source Files\win32</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

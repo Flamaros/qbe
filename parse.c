@@ -637,7 +637,7 @@ DoOp:
 			arg[1] = TYPE(ty);
 		} else
 			arg[1] = R;
-		goto Ins;
+		goto Ins_label;
 	}
 	if (op == Tloadw)
 		op = Oloadsw;
@@ -670,7 +670,7 @@ DoOp:
 			next();
 		}
 	next();
-Ins:
+Ins_label:
 	if (op != -1) {
 		if (curi - insb >= NIns)
 			err("too many instructions (2)");
