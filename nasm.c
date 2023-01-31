@@ -1,34 +1,22 @@
 #include "all.h"
 
 
-static int gasasm;
-
 void
-gasinit(enum Asm asmmode)
+nasminit(enum Asm asmmode)
 {
-	gasasm = asmmode;
-	switch (gasasm) {
-	case Gaself:
-		AT.gasloc = ".L";
-		AT.gassym = "";
-		break;
-	case Gasmacho:
-		AT.gasloc = "L";
-		AT.gassym = "_";
-		break;
-	}
 }
 
 void
-gasemitlnk(char *n, Lnk *l, char *s, FILE *f)
+nasmemitlnk(char* n, Lnk* l, char* s, FILE* f)
 {
-	char *p;
+	char* p;
 
 	if (l->sec) {
 		fprintf(f, ".section %s", l->sec);
 		if (l->secf)
 			fprintf(f, ", %s", l->secf);
-	} else {
+	}
+	else {
 		fputs(s, f);
 	}
 	fputc('\n', f);
@@ -41,25 +29,25 @@ gasemitlnk(char *n, Lnk *l, char *s, FILE *f)
 }
 
 void
-gasemitfntail(char *fn, FILE *f)
+nasmemitfntail(char* fn, FILE* f)
 {
-	if (gasasm == Gaself) {
-		fprintf(f, ".type %s, @function\n", fn);
-		fprintf(f, ".size %s, .-%s\n", fn, fn);
-	}
+	//if (gasasm == Gaself) {
+	//	fprintf(f, ".type %s, @function\n", fn);
+	//	fprintf(f, ".size %s, .-%s\n", fn, fn);
+	//}
 }
 
 void
-gasemitdat(Dat *d, FILE *f)
+nasmemitdat(Dat* d, FILE* f)
 {
-	static char *dtoa[] = {
+	static char* dtoa[] = {
 		[DB] = "\t.byte",
 		[DH] = "\t.short",
 		[DW] = "\t.int",
 		[DL] = "\t.quad"
 	};
 	static int64_t zero;
-	char *p;
+	char* p;
 
 	switch (d->type) {
 	case DStart:
@@ -67,7 +55,7 @@ gasemitdat(Dat *d, FILE *f)
 		break;
 	case DEnd:
 		if (zero != -1) {
-			gasemitlnk(d->name, d->lnk, ".bss", f);
+			nasmemitlnk(d->name, d->lnk, ".bss", f);
 			fprintf(f, "\t.fill %"PRId64",1,0\n", zero);
 		}
 		break;
@@ -79,7 +67,7 @@ gasemitdat(Dat *d, FILE *f)
 		break;
 	default:
 		if (zero != -1) {
-			gasemitlnk(d->name, d->lnk, ".data", f);
+			nasmemitlnk(d->name, d->lnk, ".data", f);
 			if (zero > 0)
 				fprintf(f, "\t.fill %"PRId64",1,0\n", zero);
 			zero = -1;
@@ -108,23 +96,23 @@ typedef struct Asmbits Asmbits;
 struct Asmbits {
 	char bits[16];
 	int size;
-	Asmbits *link;
+	Asmbits* link;
 };
 
-static Asmbits *stash;
+static Asmbits* stash;
 
 int
-gasstash(void *bits, int size)
+nasmstash(void* bits, int size)
 {
-	Asmbits **pb, *b;
+	Asmbits** pb, * b;
 	int i;
 
 	assert(size == 4 || size == 8 || size == 16);
-	for (pb=&stash, i=0; (b=*pb); pb=&b->link, i++)
+	for (pb = &stash, i = 0; (b = *pb); pb = &b->link, i++)
 		if (size <= b->size)
-		if (memcmp(bits, b->bits, size) == 0)
-			return i;
-	b = emalloc(sizeof *b);
+			if (memcmp(bits, b->bits, size) == 0)
+				return i;
+	b = emalloc(sizeof * b);
 	memcpy(b->bits, bits, size);
 	b->size = size;
 	b->link = 0;
@@ -133,54 +121,53 @@ gasstash(void *bits, int size)
 }
 
 void
-gasemitfin(FILE *f)
+nasmemitfin(FILE* f)
 {
-	Asmbits *b;
-	char *p;
+	Asmbits* b;
+	char* p;
 	int sz, i;
 	double d;
 
-	if (gasasm == Gaself)
-		fprintf(f, ".section .note.GNU-stack,\"\",@progbits\n\n");
 	if (!stash)
 		return;
 	fprintf(f, "/* floating point constants */\n.data\n");
-	for (sz=16; sz>=4; sz/=2)
-		for (b=stash, i=0; b; b=b->link, i++) {
+	for (sz = 16; sz >= 4; sz /= 2)
+		for (b = stash, i = 0; b; b = b->link, i++) {
 			if (b->size == sz) {
 				fprintf(f,
 					".balign %d\n"
 					"%sfp%d:",
 					sz, AT.gasloc, i
 				);
-				for (p=b->bits; p<&b->bits[sz]; p+=4)
+				for (p = b->bits; p < &b->bits[sz]; p += 4)
 					fprintf(f, "\n\t.int %"PRId32,
-						*(int32_t *)p);
+						*(int32_t*)p);
 				if (sz <= 8) {
 					if (sz == 4)
-						d = *(float *)b->bits;
+						d = *(float*)b->bits;
 					else
-						d = *(double *)b->bits;
+						d = *(double*)b->bits;
 					fprintf(f, " /* %f */\n", d);
-				} else
+				}
+				else
 					fprintf(f, "\n");
 			}
 		}
-	while ((b=stash)) {
+	while ((b = stash)) {
 		stash = b->link;
 		free(b);
 	}
 }
 
-AsmTarget AT_gas = {
-	.name = "gas",
+AsmTarget AT_nasm = {
+	.name = "nasm",
 	.gasloc = NULL,
 	.gassym = NULL,
 
-	.init = gasinit,
-	.emitlnk = gasemitlnk,
-	.emitfntail = gasemitfntail,
-	.emitdat = gasemitdat,
-	.stash = gasstash,
-	.emitfin = gasemitfin,
+	.init = nasminit,
+	.emitlnk = nasmemitlnk,
+	.emitfntail = nasmemitfntail,
+	.emitdat = nasmemitdat,
+	.stash = nasmstash,
+	.emitfin = nasmemitfin,
 };

@@ -12,3 +12,6 @@ VS/.vs
 VS/Debug
 VS/Release
 VS/x64
+
+# qbe output files
+*.s

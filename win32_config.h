@@ -1,4 +1,5 @@
 #pragma once
 
-#define Defasm Gaself
-#define Deftgt T_amd64_sysv
+#define Defasm Undefined
+#define Deftgt T_amd64_win64
+#define Defasmtgt AT_nasm

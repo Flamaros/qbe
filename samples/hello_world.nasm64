@@ -1,0 +1,47 @@
+; How to build (you'll need nasm compiler and Visual Studio)
+
+; Be sure that nasm compiler path is in your PATH env
+; nasm -fwin32 hello_world.nasm
+;
+; From a native Visual Studio Tools Command prompt
+; link /subsystem:console /nodefaultlib /entry:main hello_world.obj kernel32.lib
+
+;;
+;; !!!! In 64bits there is no mangling
+;;
+
+	global main				; make main label available for linker
+    extern  GetStdHandle
+    extern  WriteFile
+    extern  ExitProcess
+
+	SECTION .data
+
+message:
+    db      'Hello World', 0	; I put an addtionnal 0 but it can be omitted
+
+	SECTION .text
+
+main:
+    sub     rsp, 0x20 ; reserve 32 bytes (0x20) of shadow space
+
+    ; hStdOut = GetStdHandle(STD_OUTPUT_HANDLE)
+    mov		rcx, -11 ; STD_OUTPUT_HANDLE((DWORD)-11)
+    call    GetStdHandle
+
+    ; WriteFile( hstdOut, message, length(message), &bytes, 0);
+	add		rsp, 0x20
+	mov		rcx, rax								; move previous result (rax: hStdOut) to first parameter register (rcx)
+	mov		rdx, message
+	mov 	r8, 11
+	mov		r9, 0									; [out, optional] lpNumberOfBytesWritten
+	push	0										; [in, out, optional] lpOverlapped
+    call    WriteFile
+
+    ; ExitProcess(0)
+	add		rsp, 0x20
+	mov		rcx, 0
+    call    ExitProcess
+
+    ; never here
+    hlt

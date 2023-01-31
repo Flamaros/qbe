@@ -8,6 +8,7 @@
 #include <getopt.h>
 
 Target T;
+AsmTarget AT;
 
 char debug['Z'+1] = {
 	['P'] = 0, /* parsing */
@@ -23,16 +24,18 @@ char debug['Z'+1] = {
 };
 
 #if defined(_WIN32)
-extern Target T_amd64_sysv;
+extern Target T_amd64_win64;
+extern AsmTarget AT_nasm;
 
 static Target* tlist[] = {
-	&T_amd64_sysv,
+	&T_amd64_win64,
 	0
 };
 #else
 extern Target T_amd64_sysv;
 extern Target T_arm64;
 extern Target T_rv64;
+extern AsmTarget AT_gas;
 
 static Target *tlist[] = {
 	&T_amd64_sysv,
@@ -54,7 +57,7 @@ data(Dat *d)
 		fputs("/* end data */\n\n", outf);
 		freeall();
 	}
-	gasemitdat(d, outf);
+	AT.emitdat(d, outf);
 }
 
 static void
@@ -106,7 +109,7 @@ func(Fn *fn)
 			fn->rpo[n]->link = fn->rpo[n+1];
 	if (!dbg) {
 		T.emitfn(fn, outf);
-		gasemitfntail(fn->name, outf);
+		AT.emitfntail(fn->name, outf);
 		fprintf(outf, "/* end function %s */\n\n", fn->name);
 	} else
 		fprintf(stderr, "\n");
@@ -123,6 +126,7 @@ main(int ac, char *av[])
 
 	asmmode = Defasm;
 	T = Deftgt;
+	AT = Defasmtgt;
 	outf = stdout;
 	while ((c = getopt(ac, av, "hd:o:G:t:")) != -1)
 		switch (c) {
@@ -184,7 +188,7 @@ main(int ac, char *av[])
 			exit(c != 'h');
 		}
 
-	gasinit(asmmode);
+	AT.init(asmmode);
 
 	do {
 		f = av[optind];
@@ -202,8 +206,9 @@ main(int ac, char *av[])
 		fclose(inf);
 	} while (++optind < ac);
 
-	if (!dbg)
-		gasemitfin(outf);
+	if (!dbg) {
+		AT.emitfin(outf);
+	}
 
 	exit(0);
 }

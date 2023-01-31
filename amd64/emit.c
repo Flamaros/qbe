@@ -166,7 +166,7 @@ emitcon(Con *con, FILE *f)
 	switch (con->type) {
 	case CAddr:
 		l = str(con->label);
-		p = con->local ? gasloc : l[0] == '"' ? "" : gassym;
+		p = con->local ? AT.gasloc : l[0] == '"' ? "" : AT.gassym;
 		fprintf(f, "%s%s", p, l);
 		if (con->bits.i)
 			fprintf(f, "%+"PRId64, con->bits.i);
@@ -425,8 +425,8 @@ emitins(Ins i, Fn *fn, FILE *f)
 			fprintf(f,
 				"\txorp%c %sfp%d(%%rip), %%%s\n",
 				"xxsd"[i.cls],
-				gasloc,
-				gasstash(negmask[i.cls], 16),
+				AT.gasloc,
+				AT.stash(negmask[i.cls], 16),
 				regtoa(i.to.val, SLong)
 			);
 		break;
@@ -549,7 +549,7 @@ amd64_emitfn(Fn *fn, FILE *f)
 	int *r, c, o, n, lbl;
 	uint64_t fs;
 
-	gasemitlnk(fn->name, &fn->lnk, ".text", f);
+	AT.emitlnk(fn->name, &fn->lnk, ".text", f);
 	fputs("\tpushq %rbp\n\tmovq %rsp, %rbp\n", f);
 	fs = framesz(fn);
 	if (fs)
@@ -570,7 +570,7 @@ amd64_emitfn(Fn *fn, FILE *f)
 
 	for (lbl=0, b=fn->start; b; b=b->link) {
 		if (lbl || b->npred > 1)
-			fprintf(f, "%sbb%d:\n", gasloc, id0+b->id);
+			fprintf(f, "%sbb%d:\n", AT.gasloc, id0+b->id);
 		for (i=b->ins; i!=&b->ins[b->nins]; i++)
 			emitins(*i, fn, f);
 		lbl = 1;
@@ -596,7 +596,7 @@ amd64_emitfn(Fn *fn, FILE *f)
 		Jmp:
 			if (b->s1 != b->link)
 				fprintf(f, "\tjmp %sbb%d\n",
-					gasloc, id0+b->s1->id);
+					AT.gasloc, id0+b->s1->id);
 			else
 				lbl = 0;
 			break;
@@ -610,7 +610,7 @@ amd64_emitfn(Fn *fn, FILE *f)
 				} else
 					c = cmpneg(c);
 				fprintf(f, "\tj%s %sbb%d\n", ctoa[c],
-					gasloc, id0+b->s2->id);
+					AT.gasloc, id0+b->s2->id);
 				goto Jmp;
 			}
 			die("unhandled jump %d", b->jmp.type);

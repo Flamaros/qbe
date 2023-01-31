@@ -152,6 +152,7 @@
     <ClCompile Include="..\load.c" />
     <ClCompile Include="..\main.c" />
     <ClCompile Include="..\mem.c" />
+    <ClCompile Include="..\nasm.c" />
     <ClCompile Include="..\parse.c" />
     <ClCompile Include="..\rega.c" />
     <ClCompile Include="..\spill.c" />

@@ -5,11 +5,11 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source Files\amd64">
-      <UniqueIdentifier>{79b12d18-5689-4e3e-91cb-0cade91e1271}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\win32">
       <UniqueIdentifier>{1bd0d9a3-5a00-423a-9664-d446a3bd62fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\amd64">
+      <UniqueIdentifier>{f2cf65ce-f023-41e8-aeb8-0004c253d751}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +55,9 @@
     <ClCompile Include="..\rega.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\win32\getopt.c">
+      <Filter>Source Files\win32</Filter>
+    </ClCompile>
     <ClCompile Include="..\amd64\emit.c">
       <Filter>Source Files\amd64</Filter>
     </ClCompile>
@@ -67,8 +70,8 @@
     <ClCompile Include="..\amd64\targ.c">
       <Filter>Source Files\amd64</Filter>
     </ClCompile>
-    <ClCompile Include="..\win32\getopt.c">
-      <Filter>Source Files\win32</Filter>
+    <ClCompile Include="..\nasm.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -78,9 +81,6 @@
     <ClInclude Include="..\ops.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\amd64\all.h">
-      <Filter>Source Files\amd64</Filter>
-    </ClInclude>
     <ClInclude Include="..\platform.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -89,6 +89,9 @@
     </ClInclude>
     <ClInclude Include="..\win32\getopt.h">
       <Filter>Source Files\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\amd64\all.h">
+      <Filter>Source Files\amd64</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

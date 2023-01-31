@@ -32,6 +32,7 @@ typedef struct Field Field;
 typedef struct Dat Dat;
 typedef struct Lnk Lnk;
 typedef struct Target Target;
+typedef struct AsmTarget AsmTarget;
 
 enum {
 	NString = 72,
@@ -57,6 +58,19 @@ struct Target {
 	void (*abi)(Fn *);
 	void (*isel)(Fn *);
 	void (*emitfn)(Fn *, FILE *);
+};
+
+struct AsmTarget {
+	char name[16];
+	char* gasloc;
+	char* gassym;
+
+	void (*init)(enum Asm);
+	void (*emitlnk)(char*, Lnk*, char*, FILE*);
+	void (*emitfntail)(char*, FILE*);
+	void (*emitdat)(Dat*, FILE*);
+	int (*stash)(void*, int);
+	void (*emitfin)(FILE*);
 };
 
 #define BIT(n) ((bits)1 << (n))
@@ -409,6 +423,7 @@ struct Dat {
 
 /* main.c */
 extern Target T;
+extern AsmTarget AT;
 extern char debug['Z'+1];
 
 /* util.c */
@@ -528,14 +543,9 @@ void rega(Fn *);
 
 /* gas.c */
 enum Asm {
+	Undefined,
 	Gasmacho,
 	Gaself,
 };
-extern char *gasloc;
-extern char *gassym;
-void gasinit(enum Asm);
-void gasemitlnk(char *, Lnk *, char *, FILE *);
-void gasemitfntail(char *, FILE *);
-void gasemitdat(Dat *, FILE *);
-int gasstash(void *, int);
-void gasemitfin(FILE *);
+
+/* nasm.c */

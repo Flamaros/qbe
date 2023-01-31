@@ -1,0 +1,13 @@
+section ".data"
+
+data $message = { b "Hello World", b 0 }
+
+section ".text"
+
+export function w $main() {                # Main function
+@start
+	%hstdOut = w call $GetStdHandle(w -11)
+	call $WriteFile(w $hstdOut, l $message, w 11, l 0, l 0)
+	call $ExitProcess(w 0)
+	ret 0
+}
