@@ -15,3 +15,6 @@ VS/x64
 
 # qbe output files
 *.s
+
+samples/*.exe
+samples/*.obj
