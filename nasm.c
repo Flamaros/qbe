@@ -9,10 +9,8 @@ nasminit(enum Asm asmmode)
 void
 nasmemitlnk(char* n, Lnk* l, char* s, FILE* f)
 {
-	char* p;
-
 	if (l->sec) {
-		fprintf(f, ".section %s", l->sec);
+		fprintf(f, "\tSECTION %.*s", (int)strlen(l->sec) - 2, &l->sec[1]);
 		if (l->secf)
 			fprintf(f, ", %s", l->secf);
 	}
@@ -20,12 +18,9 @@ nasmemitlnk(char* n, Lnk* l, char* s, FILE* f)
 		fputs(s, f);
 	}
 	fputc('\n', f);
-	if (l->align)
-		fprintf(f, ".balign %d\n", l->align);
-	p = n[0] == '"' ? "" : AT.gassym;
 	if (l->export)
-		fprintf(f, ".globl %s%s\n", p, n);
-	fprintf(f, "%s%s:\n", p, n);
+		fprintf(f, "\tglobal %s\n", n);
+	fprintf(f, "%s:\n", n);
 }
 
 void
@@ -41,13 +36,12 @@ void
 nasmemitdat(Dat* d, FILE* f)
 {
 	static char* dtoa[] = {
-		[DB] = "\t.byte",
-		[DH] = "\t.short",
-		[DW] = "\t.int",
-		[DL] = "\t.quad"
+		[DB] = "\tdb", // byte 8bits
+		[DH] = "\tdw", // word 16bits (on all win platforms)
+		[DW] = "\tdd", // double word 32 bits
+		[DL] = "\tdq"  // quad word 64 bits
 	};
 	static int64_t zero;
-	char* p;
 
 	switch (d->type) {
 	case DStart:
@@ -75,16 +69,15 @@ nasmemitdat(Dat* d, FILE* f)
 		if (d->isstr) {
 			if (d->type != DB)
 				err("strings only supported for 'b' currently");
-			fprintf(f, "\t.ascii %s\n", d->u.str);
+			fprintf(f, "\tdb\t\t%s\n", d->u.str);
 		}
 		else if (d->isref) {
-			p = d->u.ref.name[0] == '"' ? "" : AT.gassym;
-			fprintf(f, "%s %s%s%+"PRId64"\n",
-				dtoa[d->type], p, d->u.ref.name,
+			fprintf(f, "%s %s%+"PRId64"\n",
+				dtoa[d->type], d->u.ref.name,
 				d->u.ref.off);
 		}
 		else {
-			fprintf(f, "%s %"PRId64"\n",
+			fprintf(f, "%s\t\t%"PRId64"\n",
 				dtoa[d->type], d->u.num);
 		}
 		break;
@@ -130,7 +123,7 @@ nasmemitfin(FILE* f)
 
 	if (!stash)
 		return;
-	fprintf(f, "/* floating point constants */\n.data\n");
+	fprintf(f, "; floating point constants\n.data\n");
 	for (sz = 16; sz >= 4; sz /= 2)
 		for (b = stash, i = 0; b; b = b->link, i++) {
 			if (b->size == sz) {
@@ -147,7 +140,7 @@ nasmemitfin(FILE* f)
 						d = *(float*)b->bits;
 					else
 						d = *(double*)b->bits;
-					fprintf(f, " /* %f */\n", d);
+					fprintf(f, " ; %f\n", d);
 				}
 				else
 					fprintf(f, "\n");
@@ -161,8 +154,8 @@ nasmemitfin(FILE* f)
 
 AsmTarget AT_nasm = {
 	.name = "nasm",
-	.gasloc = NULL,
-	.gassym = NULL,
+	.gasloc = "",
+	.gassym = "",
 
 	.init = nasminit,
 	.emitlnk = nasmemitlnk,
