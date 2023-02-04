@@ -130,7 +130,7 @@ nasmemitfin(FILE* f)
 				fprintf(f,
 					".balign %d\n"
 					"%sfp%d:",
-					sz, AT.gasloc, i
+					sz, AT.loc, i
 				);
 				for (p = b->bits; p < &b->bits[sz]; p += 4)
 					fprintf(f, "\n\t.int %"PRId32,
@@ -154,8 +154,10 @@ nasmemitfin(FILE* f)
 
 AsmTarget AT_nasm = {
 	.name = "nasm",
-	.gasloc = "",
-	.gassym = "",
+	.loc = "",
+	.sym = "",
+	.start_comment = "; ",
+	.end_comment = "",
 
 	.init = nasminit,
 	.emitlnk = nasmemitlnk,

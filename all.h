@@ -62,8 +62,10 @@ struct Target {
 
 struct AsmTarget {
 	char name[16];
-	char* gasloc;
-	char* gassym;
+	char* loc;
+	char* sym;
+	char* start_comment;
+	char* end_comment;
 
 	void (*init)(enum Asm);
 	void (*emitlnk)(char*, Lnk*, char*, FILE*);

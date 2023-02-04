@@ -54,7 +54,7 @@ data(Dat *d)
 	if (dbg)
 		return;
 	if (d->type == DEnd) {
-		fputs("/* end data */\n\n", outf);
+		fprintf(outf, "%send data%s\n\n", AT.start_comment, AT.end_comment);
 		freeall();
 	}
 	AT.emitdat(d, outf);
@@ -110,7 +110,7 @@ func(Fn *fn)
 	if (!dbg) {
 		T.emitfn(fn, outf);
 		AT.emitfntail(fn->name, outf);
-		fprintf(outf, "/* end function %s */\n\n", fn->name);
+		fprintf(outf, "%send function %s%s\n\n", AT.start_comment, fn->name, AT.end_comment);
 	} else
 		fprintf(stderr, "\n");
 	freeall();

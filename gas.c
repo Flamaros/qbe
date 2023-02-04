@@ -9,12 +9,12 @@ gasinit(enum Asm asmmode)
 	gasasm = asmmode;
 	switch (gasasm) {
 	case Gaself:
-		AT.gasloc = ".L";
-		AT.gassym = "";
+		AT.loc = ".L";
+		AT.sym = "";
 		break;
 	case Gasmacho:
-		AT.gasloc = "L";
-		AT.gassym = "_";
+		AT.loc = "L";
+		AT.sym = "_";
 		break;
 	}
 }
@@ -34,7 +34,7 @@ gasemitlnk(char *n, Lnk *l, char *s, FILE *f)
 	fputc('\n', f);
 	if (l->align)
 		fprintf(f, ".balign %d\n", l->align);
-	p = n[0] == '"' ? "" : AT.gassym;
+	p = n[0] == '"' ? "" : AT.sym;
 	if (l->export)
 		fprintf(f, ".globl %s%s\n", p, n);
 	fprintf(f, "%s%s:\n", p, n);
@@ -90,7 +90,7 @@ gasemitdat(Dat *d, FILE *f)
 			fprintf(f, "\t.ascii %s\n", d->u.str);
 		}
 		else if (d->isref) {
-			p = d->u.ref.name[0] == '"' ? "" : AT.gassym;
+			p = d->u.ref.name[0] == '"' ? "" : AT.sym;
 			fprintf(f, "%s %s%s%+"PRId64"\n",
 				dtoa[d->type], p, d->u.ref.name,
 				d->u.ref.off);
@@ -151,7 +151,7 @@ gasemitfin(FILE *f)
 				fprintf(f,
 					".balign %d\n"
 					"%sfp%d:",
-					sz, AT.gasloc, i
+					sz, AT.loc, i
 				);
 				for (p=b->bits; p<&b->bits[sz]; p+=4)
 					fprintf(f, "\n\t.int %"PRId32,
@@ -174,8 +174,10 @@ gasemitfin(FILE *f)
 
 AsmTarget AT_gas = {
 	.name = "gas",
-	.gasloc = NULL,
-	.gassym = NULL,
+	.loc = NULL,
+	.sym = NULL,
+	.start_comment = "/* ",
+	.end_comment = " */",
 
 	.init = gasinit,
 	.emitlnk = gasemitlnk,
