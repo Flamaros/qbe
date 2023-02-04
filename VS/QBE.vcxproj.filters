@@ -58,6 +58,9 @@
     <ClCompile Include="..\win32\getopt.c">
       <Filter>Source Files\win32</Filter>
     </ClCompile>
+    <ClCompile Include="..\nasm.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\amd64\emit.c">
       <Filter>Source Files\amd64</Filter>
     </ClCompile>
@@ -70,8 +73,8 @@
     <ClCompile Include="..\amd64\targ.c">
       <Filter>Source Files\amd64</Filter>
     </ClCompile>
-    <ClCompile Include="..\nasm.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\amd64\win64.c">
+      <Filter>Source Files\amd64</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

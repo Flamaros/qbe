@@ -144,6 +144,7 @@
     <ClCompile Include="..\amd64\isel.c" />
     <ClCompile Include="..\amd64\sysv.c" />
     <ClCompile Include="..\amd64\targ.c" />
+    <ClCompile Include="..\amd64\win64.c" />
     <ClCompile Include="..\cfg.c" />
     <ClCompile Include="..\copy.c" />
     <ClCompile Include="..\fold.c" />
