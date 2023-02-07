@@ -45,5 +45,5 @@ Target T_amd64_win64 = {
 	.memargs = amd64_memargs,
 	.abi = amd64_win64_abi,
 	.isel = amd64_isel,
-	.emitfn = amd64_emitfn,
+	.emitfn = amd64_win64_emitfn,
 };

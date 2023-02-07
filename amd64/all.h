@@ -75,3 +75,6 @@ void amd64_isel(Fn *);
 
 /* emit.c */
 void amd64_emitfn(Fn *, FILE *);
+
+/* win64_emit.c */
+void amd64_win64_emitfn(Fn* fn, FILE* f);

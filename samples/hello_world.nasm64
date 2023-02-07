@@ -26,7 +26,7 @@ main:
     sub     rsp, 0x20 ; reserve 32 bytes (0x20) of shadow space
 
     ; hStdOut = GetStdHandle(STD_OUTPUT_HANDLE)
-    mov		rcx, -11 ; STD_OUTPUT_HANDLE((DWORD)-11)
+    mov		ecx, -11 ; STD_OUTPUT_HANDLE((DWORD)-11)
     call    GetStdHandle
 
     ; WriteFile( hstdOut, message, length(message), &bytes, 0);
