@@ -2,48 +2,54 @@
 
 typedef struct Amd64Op Amd64Op;
 
-enum Amd64Reg {
-	RAX = RXX+1, /* caller-save */
-	RCX,
-	RDX,
-	RSI,
-	RDI,
-	R8,
-	R9,
-	R10,
-	R11,
-
-	RBX, /* callee-save */
-	R12,
-	R13,
-	R14,
-	R15,
-
-	RBP, /* globally live */
-	RSP,
-
-	XMM0, /* sse */
-	XMM1,
-	XMM2,
-	XMM3,
-	XMM4,
-	XMM5,
-	XMM6,
-	XMM7,
-	XMM8,
-	XMM9,
-	XMM10,
-	XMM11,
-	XMM12,
-	XMM13,
-	XMM14,
-	XMM15,
-
-	NFPR = XMM14 - XMM0 + 1, /* reserve XMM15 */
-	NGPR = RSP - RAX + 1,
-	NGPS = R11 - RAX + 1,
-	NFPS = NFPR,
+enum Amd64Reg {														   // win64 abi
+	RAX = RXX+1, /* caller-save */				   // RAX		/* caller-save */
+	RCX,										   // RCX
+	RDX,										   // RDX
+	RSI,										   // R8
+	RDI,										   // R9
+	R8,											   // R10
+	R9,											   // R11
+	R10,										   // XMM0
+	R11,										   // XMM1
+												   // XMM2
+	RBX, /* callee-save */						   // XMM3
+	R12,										   // XMM4
+	R13,										   // XMM5
+	R14,										   //
+	R15,										   // RBX		/* callee-save */
+												   // RBP
+	RBP, /* globally live */					   // RDI
+	RSP,										   // RSI
+												   // RSP
+	XMM0, /* sse */								   // R12
+	XMM1,										   // R13
+	XMM2,										   // R14
+	XMM3,										   // R15
+	XMM4,										   // XMM6
+	XMM5,										   // XMM7
+	XMM6,										   // XMM8
+	XMM7,										   // XMM9
+	XMM8,										   // XMM10
+	XMM9,										   // XMM11
+	XMM10,										   // XMM12
+	XMM11,										   // XMM13
+	XMM12,										   // XMM14
+	XMM13,										   // XMM15
+	XMM14,										   //
+	XMM15,										   //
+												   //
+	NFPR = XMM14 - XMM0 + 1, /* reserve XMM15 */   //
+	NGPR = RSP - RAX + 1,						   //
+	NGPS = R11 - RAX + 1,						   //
+	NFPS = NFPR,								   //
 	NCLR = R15 - RBX + 1,
+
+	NFPR_WIN64 = XMM14 - XMM6 + 1, /* reserve XMM15 */
+	NGPR_WIN64 = 32, // @Xavier need I count XMM15
+	NGPS_WIN64 = 13, // @Xavier caller-save?
+	NFPS_WIN64 = NFPR_WIN64,
+	NCLR_WIN64 = 19, // @Xavier callee-save ? Need I count XMM15 which is reserved?
 };
 MAKESURE(reg_not_tmp, XMM15 < (int)Tmp0);
 

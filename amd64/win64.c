@@ -220,15 +220,14 @@ argsclass(Ins *i0, Ins *i1, AClass *ac, int op, AClass *aret, Ref *env)
 }
 
 int amd64_win64_rsave[] = {
-	RDI, RSI, RDX, RCX, R8, R9, R10, R11, RAX,
-	XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7,
-	XMM8, XMM9, XMM10, XMM11, XMM12, XMM13, XMM14, -1
+	RCX, RDX, R8, R9, R10, R11, XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, RAX,
+	XMM6, XMM7, XMM8, XMM9, XMM10, XMM11, XMM12, XMM13, XMM14, -1
 };
-int amd64_win64_rclob[] = {RBX, R12, R13, R14, R15, -1};
+int amd64_win64_rclob[] = {RBX, RBP, RDI, RSI, RSP, R12, R13, R14, R15, XMM6, XMM7, XMM8, XMM9, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, -1}; // @Xavier should I use XMM15 here because it is reserved?
 
 MAKESURE(win64_arrays_ok,
-	sizeof amd64_win64_rsave == (NGPS+NFPS+1) * sizeof(int) &&
-	sizeof amd64_win64_rclob == (NCLR+1) * sizeof(int)
+	sizeof amd64_win64_rsave == (NGPS_WIN64+NFPS_WIN64+1) * sizeof(int) &&
+	sizeof amd64_win64_rclob == (NCLR_WIN64+1) * sizeof(int)
 );
 
 /* layout of call's second argument (RCall)

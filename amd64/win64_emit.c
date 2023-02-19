@@ -161,13 +161,9 @@ slot(int s, Fn *fn)
 static void
 emitcon(Con *con, FILE *f)
 {
-	char *p, *l;
-
 	switch (con->type) {
 	case CAddr:
-		l = str(con->label);
-		p = con->local ? AT.loc : l[0] == '"' ? "" : AT.sym;
-		fprintf(f, "%s%s", p, l);
+		fputs(str(con->label), f);
 		if (con->bits.i)
 			fprintf(f, "%+"PRId64, con->bits.i);
 		break;
@@ -305,7 +301,7 @@ Next:
 				);
 			fputc(')', f);
 			break;
-		case RCon: // @Nocheckin constant?
+		case RCon: // @Xavier constant?
 			emitcon(&fn->con[ref.val], f);
 			break;
 		default:
@@ -481,7 +477,7 @@ emitins(Ins i, Fn *fn, FILE *f)
 		}
 		/* conveniently, the assembler knows if it
 		 * should use movabsq when reading movq */
-		// !!! @Nocheckin Responsable de l'emission de mov sur la stack pour envoyer les arguments en sysv
+		// !!! @Xavier Responsable de l'emission de mov sur la stack pour envoyer les arguments en sysv
 		emitf("mov\t\t%=, %0", &i, fn, f);
 		break;
 	case Ocall:
@@ -489,7 +485,8 @@ emitins(Ins i, Fn *fn, FILE *f)
 		 * assembly... */
 		switch (rtype(i.arg[0])) {
 		case RCon:
-			fprintf(f, "\tcallq ");
+			// @Xavier It seems to be call of named functions (not function pointer)
+			fprintf(f, "\tcall\t");
 			emitcon(&fn->con[i.arg[0].val], f);
 			fprintf(f, "\n");
 			break;
@@ -528,7 +525,7 @@ framesz(Fn *fn)
 	uint64_t i, o, f;
 
 	/* specific to NAlign == 3 */
-	for (i=0, o=0; i<NCLR; i++)
+	for (i=0, o=0; i<NCLR_WIN64; i++)
 		o ^= 1 & (fn->reg >> amd64_win64_rclob[i]);
 	f = fn->slot;
 	f = (f + 3) & -4;
@@ -553,16 +550,14 @@ amd64_win64_emitfn(Fn *fn, FILE *f)
 	fputs("\tsub\t\trsp, 0x20\n", f);
 	fs = framesz(fn);
 	if (fs) {
-		assert(0);
-		//fprintf(f, "\tsubq $%"PRIu64", %%rsp\n", fs);
+		fprintf(f, "\tsubq $%"PRIu64", %%rsp\n", fs);
 	}
 	if (fn->vararg) {
-		assert(0);
-		//o = -176;
-		//for (r=amd64_win64_rsave; r<&amd64_win64_rsave[6]; r++, o+=8)
-		//	fprintf(f, "\tmovq %%%s, %d(%%rbp)\n", rname[*r][0], o);
-		//for (n=0; n<8; ++n, o+=16)
-		//	fprintf(f, "\tmovaps %%xmm%d, %d(%%rbp)\n", n, o);
+		o = -176;
+		for (r=amd64_win64_rsave; r<&amd64_win64_rsave[6]; r++, o+=8)
+			fprintf(f, "\tmovq %%%s, %d(%%rbp)\n", rname[*r][0], o);
+		for (n=0; n<8; ++n, o+=16)
+			fprintf(f, "\tmovaps %%xmm%d, %d(%%rbp)\n", n, o);
 	}
 
 	for (lbl=0, b=fn->start; b; b=b->link) {
@@ -579,7 +574,7 @@ amd64_win64_emitfn(Fn *fn, FILE *f)
 					"\tsubq $%"PRIu64", %%rsp\n",
 					fs
 				);
-			for (r=&amd64_win64_rclob[NCLR]; r>amd64_win64_rclob;)
+			for (r=&amd64_win64_rclob[NCLR_WIN64]; r>amd64_win64_rclob;) // @Xavier seems be responsible of restoring xmm register before leaving the current function
 				if (fn->reg & BIT(*--r)) {
 					itmp.arg[0] = TMP(*r);
 					emitf("popq %L0", &itmp, fn, f);

@@ -6,6 +6,7 @@ config.h
 
 # Visual Studio (global)
 *.user
+*.scor*
 
 # Visual Studio
 VS/.vs
@@ -18,3 +19,4 @@ VS/x64
 
 samples/*.exe
 samples/*.obj
+
