@@ -32,7 +32,7 @@ main:
     ; WriteFile( hstdOut, message, length(message), &bytes, 0);
 	add		rsp, 0x20
 	mov		rcx, rax								; move previous result (rax: hStdOut) to first parameter register (rcx)
-	mov		rdx, message
+	mov		rdx, message							; in some asm langages lea instruction is used here, but in nasm labels are directly address
 	mov 	r8, 11
 	mov		r9, 0									; [out, optional] lpNumberOfBytesWritten
 	push	0										; [in, out, optional] lpOverlapped

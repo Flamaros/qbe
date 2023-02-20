@@ -241,6 +241,7 @@ MAKESURE(win64_arrays_ok,
  *          ` 1 if rax is used to pass data    (0..1)
  */
 
+// @Xavier return registers? in win64 only RAX can be used, there is no support of 128bits return value
 bits
 amd64_win64_retregs(Ref r, int p[2])
 {

@@ -104,7 +104,7 @@ static struct {
 	{ Ocast,   Ki, "movq %D0, %L=" },
 	{ Ocast,   Ka, "movq %L0, %D=" },
 
-	{ Oaddr,   Ki, "lea%k %M0, %=" },
+	{ Oaddr,   Ki, "mov\t\t%=, %M0" }, // @Xavier here in System V lea instruction is used
 	{ Oswap,   Ki, "xchg%k %0, %1" },
 	{ Osign,   Kl, "cqto" },
 	{ Osign,   Kw, "cltd" },
@@ -332,8 +332,9 @@ Next:
 		case RCon:
 			off = fn->con[ref.val];
 			emitcon(&off, f);
-			if (off.type == CAddr)
-				fprintf(f, "(%%rip)");
+			// @Xavier In nasm we can use the label without suffix
+			//if (off.type == CAddr)
+			//	fprintf(f, "(%%rip)");
 			break;
 		case RTmp:
 			assert(isreg(ref));
@@ -355,7 +356,7 @@ static void *negmask[4] = {
 };
 
 static void
-emitins(Ins i, Fn *fn, FILE *f)
+emitins(Ins i, Fn *fn, FILE *file)
 {
 	Ref r;
 	int64_t val;
@@ -371,6 +372,7 @@ emitins(Ins i, Fn *fn, FILE *f)
 		for (o=0;; o++) {
 			/* this linear search should really be a binary
 			 * search */
+			// @Xavier @TODO @SpeedUp
 			if (omap[o].op == NOp)
 				die("no match for %s(%c)",
 					optab[i.op].name, "wlsd"[i.cls]);
@@ -380,7 +382,7 @@ emitins(Ins i, Fn *fn, FILE *f)
 			|| (omap[o].cls == Ka))
 				break;
 		}
-		emitf(omap[o].asm, &i, fn, f);
+		emitf(omap[o].asm, &i, fn, file);
 		break;
 	case Onop:
 		/* just do nothing for nops, they are inserted
@@ -397,7 +399,7 @@ emitins(Ins i, Fn *fn, FILE *f)
 		if (KBASE(i.cls) == 0 /* only available for ints */
 		&& rtype(i.arg[0]) == RCon
 		&& rtype(i.arg[1]) == RTmp) {
-			emitf("imul%k %0, %1, %=", &i, fn, f);
+			emitf("imul%k %0, %1, %=", &i, fn, file);
 			break;
 		}
 		goto Table;
@@ -406,18 +408,18 @@ emitins(Ins i, Fn *fn, FILE *f)
 		 * some 3-address subtractions */
 		if (req(i.to, i.arg[1]) && !req(i.arg[0], i.to)) {
 			ineg = (Ins){Oneg, i.cls, i.to, {i.to}};
-			emitins(ineg, fn, f);
-			emitf("add%k %0, %=", &i, fn, f);
+			emitins(ineg, fn, file);
+			emitf("add%k %0, %=", &i, fn, file);
 			break;
 		}
 		goto Table;
 	case Oneg:
 		if (!req(i.to, i.arg[0]))
-			emitf("mov%k %0, %=", &i, fn, f);
+			emitf("mov%k %0, %=", &i, fn, file);
 		if (KBASE(i.cls) == 0)
-			emitf("neg%k %=", &i, fn, f);
+			emitf("neg%k %=", &i, fn, file);
 		else
-			fprintf(f,
+			fprintf(file,
 				"\txorp%c %sfp%d(%%rip), %%%s\n",
 				"xxsd"[i.cls],
 				AT.loc,
@@ -430,8 +432,8 @@ emitins(Ins i, Fn *fn, FILE *f)
 		 * conversion to 2-address in emitf() would fail */
 		if (req(i.to, i.arg[1])) {
 			i.arg[1] = TMP(XMM0+15);
-			emitf("mov%k %=, %1", &i, fn, f);
-			emitf("mov%k %0, %=", &i, fn, f);
+			emitf("mov%k %=, %1", &i, fn, file);
+			emitf("mov%k %0, %=", &i, fn, file);
 			i.arg[0] = i.to;
 		}
 		goto Table;
@@ -451,34 +453,34 @@ emitins(Ins i, Fn *fn, FILE *f)
 			val = fn->con[i.arg[0].val].bits.i;
 			if (isreg(i.to))
 			if (val >= 0 && val <= UINT32_MAX) {
-				emitf("movl %W0, %W=", &i, fn, f);
+				emitf("mov\t\t%=, %W0", &i, fn, file); // @Xavier In System V a register size was used (d suffix ex: r10d)
 				break;
 			}
 			if (rtype(i.to) == RSlot)
 			if (val < INT32_MIN || val > INT32_MAX) {
-				emitf("movl %0, %=", &i, fn, f);
-				emitf("movl %0>>32, 4+%=", &i, fn, f);
+				emitf("movl %0, %=", &i, fn, file);
+				emitf("movl %0>>32, 4+%=", &i, fn, file);
 				break;
 			}
 		}
 		if (isreg(i.to)
 		&& t0 == RCon
 		&& fn->con[i.arg[0].val].type == CAddr) {
-			emitf("lea%k %M0, %=", &i, fn, f);
+			emitf("lea%k %M0, %=", &i, fn, file);
 			break;
 		}
 		if (rtype(i.to) == RSlot
 		&& (t0 == RSlot || t0 == RMem)) {
 			i.cls = KWIDE(i.cls) ? Kd : Ks;
 			i.arg[1] = TMP(XMM0+15);
-			emitf("mov%k %0, %1", &i, fn, f);
-			emitf("mov%k %1, %=", &i, fn, f);
+			emitf("mov%k %0, %1", &i, fn, file);
+			emitf("mov%k %1, %=", &i, fn, file);
 			break;
 		}
 		/* conveniently, the assembler knows if it
 		 * should use movabsq when reading movq */
 		// !!! @Xavier Responsable de l'emission de mov sur la stack pour envoyer les arguments en sysv
-		emitf("mov\t\t%=, %0", &i, fn, f);
+		emitf("mov\t\t%=, %0", &i, fn, file);
 		break;
 	case Ocall:
 		/* calls simply have a weird syntax in AT&T
@@ -486,12 +488,12 @@ emitins(Ins i, Fn *fn, FILE *f)
 		switch (rtype(i.arg[0])) {
 		case RCon:
 			// @Xavier It seems to be call of named functions (not function pointer)
-			fprintf(f, "\tcall\t");
-			emitcon(&fn->con[i.arg[0].val], f);
-			fprintf(f, "\n");
+			fprintf(file, "\tcall\t");
+			emitcon(&fn->con[i.arg[0].val], file);
+			fprintf(file, "\n");
 			break;
 		case RTmp:
-			emitf("callq *%L0", &i, fn, f);
+			emitf("callq *%L0", &i, fn, file);
 			break;
 		default:
 			die("invalid call argument");
@@ -502,9 +504,9 @@ emitins(Ins i, Fn *fn, FILE *f)
 		 * maybe we should split Osalloc in 2 different
 		 * instructions depending on the result
 		 */
-		emitf("subq %L0, %%rsp", &i, fn, f);
+		emitf("subq %L0, %%rsp", &i, fn, file);
 		if (!req(i.to, R))
-			emitcopy(i.to, TMP(RSP), Kl, fn, f);
+			emitcopy(i.to, TMP(RSP), Kl, fn, file);
 		break;
 	case Oswap:
 		if (KBASE(i.cls) == 0)
@@ -512,9 +514,9 @@ emitins(Ins i, Fn *fn, FILE *f)
 		/* for floats, there is no swap instruction
 		 * so we use xmm15 as a temporary
 		 */
-		emitcopy(TMP(XMM0+15), i.arg[0], i.cls, fn, f);
-		emitcopy(i.arg[0], i.arg[1], i.cls, fn, f);
-		emitcopy(i.arg[1], TMP(XMM0+15), i.cls, fn, f);
+		emitcopy(TMP(XMM0+15), i.arg[0], i.cls, fn, file);
+		emitcopy(i.arg[0], i.arg[1], i.cls, fn, file);
+		emitcopy(i.arg[1], TMP(XMM0+15), i.cls, fn, file);
 		break;
 	}
 }
@@ -559,6 +561,13 @@ amd64_win64_emitfn(Fn *fn, FILE *f)
 		for (n=0; n<8; ++n, o+=16)
 			fprintf(f, "\tmovaps %%xmm%d, %d(%%rbp)\n", n, o);
 	}
+	// @Xavier I don't really know what it is
+	for (r = amd64_sysv_rclob; r < &amd64_sysv_rclob[NCLR_WIN64]; r++)
+		if (fn->reg & BIT(*r)) {
+			itmp.arg[0] = TMP(*r);
+			emitf("pushq %L0", &itmp, fn, f);
+			fs += 8;
+		}
 
 	for (lbl=0, b=fn->start; b; b=b->link) {
 		if (lbl || b->npred > 1)
